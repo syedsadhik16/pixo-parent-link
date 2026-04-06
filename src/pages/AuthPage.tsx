@@ -1,0 +1,109 @@
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import pixelWelcome from '@/assets/pixel-welcome.png';
+import pixoLogo from '@/assets/pixo-logo-full.jpg';
+
+export default function AuthPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } },
+        });
+        if (error) throw error;
+        toast({ title: 'Account created', description: 'Check your email to verify your account.' });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      }
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-3">
+          <img src={pixoLogo} alt="PIXO" className="h-12 mx-auto object-contain" />
+          <img src={pixelWelcome} alt="Pixel mascot" className="w-28 h-28 mx-auto" />
+          <h1 className="text-2xl font-heading font-bold text-foreground">
+            {isSignUp ? 'Create Your Parent Account' : 'Welcome Back, Parent'}
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Monitor your child's English-learning journey
+          </p>
+        </div>
+
+        <Card className="p-6 shadow-card">
+          <form onSubmit={handleAuth} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <label className="text-sm font-medium text-foreground">Full Name</label>
+                <Input
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  placeholder="Your name"
+                  required={isSignUp}
+                />
+              </div>
+            )}
+            <div>
+              <label className="text-sm font-medium text-foreground">Email</label>
+              <Input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="parent@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Password</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Min 6 characters"
+                required
+                minLength={6}
+              />
+            </div>
+            <Button type="submit" className="w-full gradient-hero text-primary-foreground" disabled={loading}>
+              {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+            </Button>
+          </form>
+          <div className="mt-4 text-center">
+            <button
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setIsSignUp(!isSignUp)}
+            >
+              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+            </button>
+          </div>
+        </Card>
+
+        <p className="text-center text-xs text-muted-foreground">
+          Energy. Learn. Grow.
+        </p>
+      </div>
+    </div>
+  );
+}
