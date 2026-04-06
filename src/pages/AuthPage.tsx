@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRole } from '@/hooks/useRole';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -17,11 +18,15 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { role } = useRole();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) navigate('/dashboard', { replace: true });
-  }, [user, navigate]);
+    if (user && role) {
+      const routes: Record<string, string> = { parent: '/dashboard', student: '/student', admin: '/admin' };
+      navigate(routes[role] ?? '/dashboard', { replace: true });
+    }
+  }, [user, role, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,10 +61,10 @@ export default function AuthPage() {
           <img src={pixoLogo} alt="PIXO" className="h-12 mx-auto object-contain" />
           <img src={pixelWelcome} alt="Pixel mascot" className="w-28 h-28 mx-auto" />
           <h1 className="text-2xl font-heading font-bold text-foreground">
-            {isSignUp ? 'Create Your Parent Account' : 'Welcome Back, Parent'}
+            {isSignUp ? 'Create Your Account' : 'Welcome to PIXO'}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Monitor your child's English-learning journey
+            Sign in as Parent, Student, or Admin
           </p>
         </div>
 
@@ -82,7 +87,7 @@ export default function AuthPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="parent@example.com"
+                placeholder="you@example.com"
                 required
               />
             </div>
