@@ -1,13 +1,13 @@
-import { useState } from 'react';
 import { useChild } from '@/contexts/ChildContext';
 import { useWeeklyReports, useMonthlyReports, usePerformanceSnapshots, useTodayAttendance, useSubscription } from '@/hooks/useDataHooks';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import { format, parseISO } from 'date-fns';
-import { Download, Lock, FileText } from 'lucide-react';
+import { Download, Lock, FileText, TrendingUp } from 'lucide-react';
 import pixelCelebrate from '@/assets/pixel-celebrate.png';
+import { exportReportAsPdf } from '@/lib/pdfExport';
 
 function PremiumLockCard() {
   return (
@@ -27,15 +27,6 @@ function PremiumLockCard() {
   );
 }
 
-function DownloadPdfButton({ label }: { label: string }) {
-  return (
-    <Button variant="outline" size="sm" className="text-xs gap-1">
-      <Download className="w-3 h-3" />
-      {label}
-    </Button>
-  );
-}
-
 export default function ReportsPage() {
   const { activeChild } = useChild();
   const { data: weeklyReports } = useWeeklyReports(activeChild?.id);
@@ -47,11 +38,20 @@ export default function ReportsPage() {
 
   const todaySnapshot = dailySnapshots?.[0];
 
+  const trendData = dailySnapshots?.slice(0, 7).reverse().map(s => ({
+    date: format(parseISO(s.snapshot_date), 'EEE'),
+    pronunciation: Number(s.pronunciation_score ?? 0),
+    fluency: Number(s.fluency_score ?? 0),
+  })) ?? [];
+
+  const handleDownloadPdf = (reportType: string, periodLabel: string) => {
+    exportReportAsPdf(activeChild?.display_name ?? 'Student', reportType, periodLabel);
+  };
+
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-heading font-bold text-foreground">Reports</h1>
-        <DownloadPdfButton label="Download PDF" />
       </div>
 
       <Tabs defaultValue="daily" className="w-full">
@@ -63,19 +63,46 @@ export default function ReportsPage() {
 
         {/* Daily */}
         <TabsContent value="daily" className="space-y-4 mt-4">
-          <Card className="p-4 shadow-card">
-            <div className="flex items-center gap-3 mb-3">
-              <FileText className="w-5 h-5 text-growth" />
-              <h3 className="font-heading font-bold text-foreground">Today's Report</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><p className="text-xs text-muted-foreground">Attendance</p><p className="font-heading font-bold text-foreground">{todayAttendance?.status ?? 'Pending'}</p></div>
-              <div><p className="text-xs text-muted-foreground">Minutes</p><p className="font-heading font-bold text-foreground">{todayAttendance?.minutes_attended ?? 0}</p></div>
-              <div><p className="text-xs text-muted-foreground">Pronunciation</p><p className="font-heading font-bold text-foreground">{todaySnapshot?.pronunciation_score ?? '-'}%</p></div>
-              <div><p className="text-xs text-muted-foreground">Speaking</p><p className="font-heading font-bold text-foreground">{todaySnapshot?.speaking_attempts ?? 0} attempts</p></div>
-            </div>
-            {todaySnapshot?.summary && <p className="text-sm text-muted-foreground mt-3">{todaySnapshot.summary}</p>}
-          </Card>
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => handleDownloadPdf('Daily', format(new Date(), 'MMM d, yyyy'))}>
+              <Download className="w-3 h-3" /> Download PDF
+            </Button>
+          </div>
+          <div id="report-print-area">
+            <Card className="p-4 shadow-card">
+              <div className="flex items-center gap-3 mb-3">
+                <FileText className="w-5 h-5 text-growth" />
+                <h3 className="font-heading font-bold text-foreground">Today's Report</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="stat-card"><p className="text-xs text-muted-foreground">Attendance</p><p className="font-heading font-bold text-foreground capitalize">{todayAttendance?.status ?? 'Pending'}</p></div>
+                <div><p className="text-xs text-muted-foreground">Minutes</p><p className="font-heading font-bold text-foreground">{todayAttendance?.minutes_attended ?? 0}</p></div>
+                <div><p className="text-xs text-muted-foreground">Pronunciation</p><p className="font-heading font-bold text-foreground">{todaySnapshot?.pronunciation_score ?? '-'}%</p></div>
+                <div><p className="text-xs text-muted-foreground">Speaking</p><p className="font-heading font-bold text-foreground">{todaySnapshot?.speaking_attempts ?? 0} attempts</p></div>
+              </div>
+              {todaySnapshot?.summary && <p className="text-sm text-muted-foreground mt-3">{todaySnapshot.summary}</p>}
+            </Card>
+
+            {/* Trend Chart */}
+            {trendData.length > 0 && (
+              <Card className="p-4 shadow-card mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-4 h-4 text-growth" />
+                  <h3 className="text-sm font-heading font-bold text-foreground">7-Day Score Trend</h3>
+                </div>
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <YAxis hide domain={[0, 100]} />
+                    <Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
+                    <Line type="monotone" dataKey="pronunciation" stroke="hsl(10, 85%, 55%)" strokeWidth={2} dot={{ r: 3 }} name="Pronunciation" />
+                    <Line type="monotone" dataKey="fluency" stroke="hsl(142, 64%, 45%)" strokeWidth={2} dot={{ r: 3 }} name="Fluency" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
+            )}
+          </div>
           {!isPremium && <PremiumLockCard />}
         </TabsContent>
 
@@ -85,7 +112,9 @@ export default function ReportsPage() {
             <Card key={wr.id} className="p-4 shadow-card space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-bold text-foreground">{wr.week_label}</h3>
-                <DownloadPdfButton label="PDF" />
+                <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => handleDownloadPdf('Weekly', wr.week_label)}>
+                  <Download className="w-3 h-3" /> PDF
+                </Button>
               </div>
               {wr.summary && <p className="text-sm text-muted-foreground">{wr.summary}</p>}
               {wr.strengths && Array.isArray(wr.strengths) && (wr.strengths as string[]).length > 0 && (
@@ -119,7 +148,9 @@ export default function ReportsPage() {
             <Card key={mr.id} className="p-4 shadow-card space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-bold text-foreground">{mr.month_label}</h3>
-                <DownloadPdfButton label="PDF" />
+                <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => handleDownloadPdf('Monthly', mr.month_label)}>
+                  <Download className="w-3 h-3" /> PDF
+                </Button>
               </div>
               {mr.summary && <p className="text-sm text-muted-foreground">{mr.summary}</p>}
               <div className="grid grid-cols-2 gap-3">

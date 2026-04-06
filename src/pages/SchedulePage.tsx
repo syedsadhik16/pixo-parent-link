@@ -2,18 +2,23 @@ import { useChild } from '@/contexts/ChildContext';
 import { useTodaySchedule, useUpcomingSchedule } from '@/hooks/useDataHooks';
 import { Card } from '@/components/ui/card';
 import { format, parseISO } from 'date-fns';
-import { Calendar, BookOpen, Clock, Target, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, Target, CheckCircle, XCircle } from 'lucide-react';
+import pixelLearning from '@/assets/pixel-learning.png';
 
 export default function SchedulePage() {
   const { activeChild } = useChild();
   const { data: today } = useTodaySchedule(activeChild?.id);
   const { data: upcoming } = useUpcomingSchedule(activeChild?.id, 14);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   const statusIcon = (s: string) => {
     if (s === 'completed') return <CheckCircle className="w-4 h-4 text-growth" />;
     if (s === 'missed') return <XCircle className="w-4 h-4 text-destructive" />;
-    return <Clock className="w-4 h-4 text-secondary" />;
+    return <Clock className="w-4 h-4 text-muted-foreground" />;
   };
+
+  const futureClasses = upcoming?.filter(s => s.scheduled_date !== todayStr) ?? [];
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -48,8 +53,8 @@ export default function SchedulePage() {
             )}
           </Card>
         ) : (
-          <Card className="p-4 bg-muted border-border text-center">
-            <Calendar className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+          <Card className="p-6 bg-muted border-border text-center">
+            <img src={pixelLearning} alt="" className="w-12 h-12 mx-auto mb-2" loading="lazy" />
             <p className="text-sm text-muted-foreground">No class scheduled for today</p>
           </Card>
         )}
@@ -59,7 +64,7 @@ export default function SchedulePage() {
       <section>
         <h2 className="text-sm font-heading font-bold text-foreground uppercase tracking-wider mb-3">Upcoming Classes</h2>
         <div className="space-y-2">
-          {upcoming?.filter(s => s.scheduled_date !== new Date().toISOString().split('T')[0]).map(s => (
+          {futureClasses.map(s => (
             <Card key={s.id} className="p-3 shadow-card flex items-center gap-3">
               {statusIcon(s.class_status)}
               <div className="flex-1 min-w-0">
@@ -71,7 +76,7 @@ export default function SchedulePage() {
               </div>
             </Card>
           ))}
-          {(!upcoming || upcoming.length <= 1) && (
+          {futureClasses.length === 0 && (
             <Card className="p-4 text-center text-muted-foreground text-sm">No upcoming classes scheduled</Card>
           )}
         </div>
