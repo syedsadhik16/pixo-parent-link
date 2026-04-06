@@ -890,7 +890,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_student_child_id: {
+        Args: { student_user_id: string }
+        Returns: string
+      }
+      is_admin: { Args: { check_user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "parent" | "student" | "admin"
