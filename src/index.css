@@ -1,96 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 40 33% 98%;
+    --foreground: 220 30% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 30% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 30% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 45 100% 51%;
+    --secondary-foreground: 220 30% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 142 64% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 24 95% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* PIXO Brand Pillars */
+    --energy: 10 85% 55%;
+    --energy-light: 18 90% 62%;
+    --energy-bg: 18 100% 96%;
+
+    --learning: 45 100% 51%;
+    --learning-light: 42 95% 60%;
+    --learning-bg: 45 100% 96%;
+
+    --growth: 142 64% 45%;
+    --growth-light: 145 55% 55%;
+    --growth-bg: 142 80% 96%;
+
+    --info: 210 100% 52%;
+    --info-light: 210 90% 62%;
+    --info-bg: 210 100% 96%;
+
+    /* Gradients */
+    --gradient-energy: linear-gradient(135deg, hsl(10, 85%, 55%), hsl(30, 95%, 55%));
+    --gradient-learning: linear-gradient(135deg, hsl(45, 100%, 51%), hsl(38, 95%, 58%));
+    --gradient-growth: linear-gradient(135deg, hsl(142, 64%, 45%), hsl(160, 55%, 50%));
+    --gradient-brand: linear-gradient(135deg, hsl(10, 85%, 55%), hsl(45, 100%, 51%), hsl(142, 64%, 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(24, 95%, 53%), hsl(40, 95%, 55%));
+
+    /* Shadows */
+    --shadow-card: 0 2px 12px -2px hsl(220 30% 15% / 0.06);
+    --shadow-card-hover: 0 8px 24px -4px hsl(220 30% 15% / 0.1);
+    --shadow-energy: 0 4px 16px -2px hsl(10 85% 55% / 0.25);
+    --shadow-learning: 0 4px 16px -2px hsl(45 100% 51% / 0.25);
+    --shadow-growth: 0 4px 16px -2px hsl(142 64% 45% / 0.25);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 40 33% 96%;
+    --sidebar-accent-foreground: 220 30% 15%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 24 95% 53%;
   }
 }
 
@@ -98,8 +82,42 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Nunito', sans-serif;
+    @apply font-bold;
+  }
+}
+
+@layer utilities {
+  .gradient-energy {
+    background: var(--gradient-energy);
+  }
+  .gradient-learning {
+    background: var(--gradient-learning);
+  }
+  .gradient-growth {
+    background: var(--gradient-growth);
+  }
+  .gradient-brand {
+    background: var(--gradient-brand);
+  }
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .text-gradient-brand {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
