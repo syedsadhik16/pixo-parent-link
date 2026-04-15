@@ -4,7 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useDataHooks';
 import { Home, BookOpen, Activity, FileText, User, Bell, ChevronDown } from 'lucide-react';
 import pixoLogo from '@/assets/pixo-logo-full.jpg';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
 
 const navItems = [
   { to: '/dashboard', icon: Home, label: 'Home', end: true },
@@ -19,11 +21,27 @@ export default function DashboardLayout() {
   const { data: notifications } = useNotifications();
   const navigate = useNavigate();
   const [showChildPicker, setShowChildPicker] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const unreadCount = notifications?.filter(n => !n.read).length ?? 0;
+  const recentNotifications = (notifications ?? []).slice(0, 8);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const markRead = async (id: string) => {
+    await supabase.from('parent_notifications').update({ read: true }).eq('id', id);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* Top Header */}
       <header className="sticky top-0 z-40 bg-card border-b border-border shadow-card">
         <div className="container flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
@@ -56,20 +74,55 @@ export default function DashboardLayout() {
             </div>
           )}
 
-          <button
-            onClick={() => navigate('/dashboard/profile')}
-            className="relative p-2 rounded-lg hover:bg-muted transition-colors"
-          >
-            <Bell className="w-5 h-5 text-muted-foreground" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] font-bold rounded-full gradient-energy text-primary-foreground flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-lg hover:bg-muted transition-colors"
+            >
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] font-bold rounded-full gradient-energy text-primary-foreground flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <div className="absolute right-0 top-11 w-80 max-h-96 overflow-y-auto bg-card rounded-lg shadow-card-hover border border-border z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                  <p className="text-sm font-heading font-bold text-foreground">Notifications</p>
+                  {unreadCount > 0 && (
+                    <span className="text-xs text-primary font-medium">{unreadCount} unread</span>
+                  )}
+                </div>
+                {recentNotifications.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">No notifications yet</p>
+                ) : (
+                  recentNotifications.map(n => (
+                    <button
+                      key={n.id}
+                      className={`w-full text-left px-4 py-3 border-b border-border last:border-0 hover:bg-muted transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
+                      onClick={() => { if (!n.read) markRead(n.id); }}
+                    >
+                      <p className={`text-sm ${!n.read ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{n.title}</p>
+                      {n.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>}
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                      </p>
+                    </button>
+                  ))
+                )}
+                <button
+                  className="w-full px-4 py-2.5 text-xs font-medium text-primary hover:bg-muted transition-colors"
+                  onClick={() => { setShowNotifications(false); navigate('/dashboard/profile'); }}
+                >
+                  View all notifications
+                </button>
+              </div>
             )}
-          </button>
+          </div>
         </div>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex container px-4 gap-1">
           {navItems.map(item => (
             <NavLink
@@ -89,12 +142,10 @@ export default function DashboardLayout() {
         </nav>
       </header>
 
-      {/* Content */}
       <main className="container px-4 py-4 md:py-6">
         <Outlet />
       </main>
 
-      {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 shadow-card">
         <div className="flex justify-around py-1">
           {navItems.map(item => (
