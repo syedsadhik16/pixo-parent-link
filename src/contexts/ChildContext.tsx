@@ -43,23 +43,26 @@ export function ChildProvider({ children: childrenProp }: { children: ReactNode 
       setLoading(false);
       return;
     }
+    setLoading(true);
     const { data } = await supabase
       .from('parent_child_links')
       .select('child_id, children(*)')
       .eq('parent_profile_id', user.id)
       .eq('is_active', true);
 
-    if (data) {
-      const kids = data.map((link: any) => link.children).filter(Boolean) as Child[];
-      setLinkedChildren(kids);
-      if (kids.length > 0 && !activeChildId) {
-        setActiveChildId(kids[0].id);
-      }
+    const kids = (data ?? [])
+      .map((link: any) => link.children)
+      .filter(Boolean) as Child[];
+    setLinkedChildren(kids);
+    if (kids.length > 0) {
+      setActiveChildId((curr) => curr && kids.some(k => k.id === curr) ? curr : kids[0].id);
+    } else {
+      setActiveChildId(null);
     }
     setLoading(false);
   };
 
-  useEffect(() => { fetchChildren(); }, [user]);
+  useEffect(() => { fetchChildren(); }, [user?.id]);
 
   const activeChild = linkedChildren.find(c => c.id === activeChildId) || null;
 
