@@ -59,7 +59,15 @@ export default function AuthPage() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-3">
           <img src={pixoLogo} alt="PIXO" className="h-12 mx-auto object-contain" />
-          <img src={pixelWelcome} alt="Pixel mascot" className="w-28 h-28 mx-auto" />
+          <video
+            src="/videos/pixo-mascot.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            aria-label="Pixel mascot animation"
+            className="w-40 h-40 mx-auto object-contain rounded-xl"
+          />
           <h1 className="text-2xl font-heading font-bold text-foreground">
             {isSignUp ? 'Create Your Account' : 'Welcome to PIXO'}
           </h1>
