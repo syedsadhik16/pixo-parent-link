@@ -55,28 +55,32 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="relative min-h-screen w-full overflow-hidden bg-background flex items-center justify-center p-4">
+      {/* Full-bleed background video */}
+      <video
+        src="/videos/pixo-mascot.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+      />
+      {/* Soft gradient overlay so the form stays legible */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/85" />
+
+      <div className="relative z-10 w-full max-w-md space-y-6">
         <div className="text-center space-y-3">
-          <img src={pixoLogo} alt="PIXO" className="h-12 mx-auto object-contain" />
-          <video
-            src="/videos/pixo-mascot.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            aria-label="Pixel mascot animation"
-            className="w-40 h-40 mx-auto object-contain rounded-xl"
-          />
-          <h1 className="text-2xl font-heading font-bold text-foreground">
+          <img src={pixoLogo} alt="PIXO" className="h-12 mx-auto object-contain drop-shadow-md" />
+          <h1 className="text-2xl font-heading font-bold text-foreground drop-shadow-sm">
             {isSignUp ? 'Create Your Account' : 'Welcome to PIXO'}
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-foreground/80 text-sm">
             Sign in as Parent, Student, or Admin
           </p>
         </div>
 
-        <Card className="p-6 shadow-card">
+        <Card className="p-6 shadow-card backdrop-blur-md bg-card/80 border-border/60">
           <form onSubmit={handleAuth} className="space-y-4">
             {isSignUp && (
               <div>
@@ -124,7 +128,7 @@ export default function AuthPage() {
           </div>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-foreground/70 drop-shadow-sm">
           Energy. Learn. Grow.
         </p>
       </div>
