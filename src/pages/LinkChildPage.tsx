@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { CheckCircle, AlertCircle, KeyRound, Mail, Phone, Ticket, ArrowRight, HelpCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, KeyRound, Mail, Phone, Ticket, ArrowRight, HelpCircle, LogOut } from 'lucide-react';
 import pixelWelcome from '@/assets/pixel-welcome.png';
 import pixoLogo from '@/assets/pixo-logo-full.jpg';
 
@@ -31,7 +31,7 @@ export default function LinkChildPage() {
   const [loading, setLoading] = useState(false);
   const [foundChild, setFoundChild] = useState<FoundChild | null>(null);
   const [linkMethod, setLinkMethod] = useState<'code' | 'email' | 'phone' | 'token'>('code');
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { refetch } = useChild();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -150,8 +150,21 @@ export default function LinkChildPage() {
     { value: 'token' as const, icon: Ticket, label: 'Invite Token' },
   ];
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        {user?.email && (
+          <span className="text-xs text-muted-foreground hidden sm:inline">{user.email}</span>
+        )}
+        <Button variant="outline" size="sm" onClick={handleSignOut}>
+          <LogOut className="w-4 h-4 mr-2" /> Sign Out
+        </Button>
+      </div>
       <div className="w-full max-w-lg space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
